@@ -64,7 +64,19 @@ except ImportError:
     print("SKIP icons: pip install pillow"); skip += 1
 else:
     # the HelperBee mark exported by scripts/brand-export.mjs (rsvg-convert -w 512 brand/mark.svg -o brand/mark-512.png)
-    MARK = Image.open(os.environ.get("HB_MARK") or str(pathlib.Path(__file__).resolve().parents[2] / "brand" / "mark-512.png")).convert("RGBA")
+    def draw_mark(n=512):  # Hive hexagon + hexagonal lifebuoy, same geometry as brand/mark.svg (no SVG renderer needed)
+        import math
+        k = n * 4 / 64; im = Image.new("RGBA", (n * 4, n * 4), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+        hexp = lambda r: [(k * (32 + r * math.cos(math.radians(-90 + 60 * i))), k * (32 + r * math.sin(math.radians(-90 + 60 * i)))) for i in range(6)]
+        d.polygon(hexp(30), fill="#EF443B"); d.polygon(hexp(23), fill="#F8FAFC")
+        O, I = hexp(15.5), hexp(8)
+        for i in range(6):
+            j = (i + 1) % 6
+            d.polygon([O[i], O[j], I[j], I[i]], fill="#B8322B" if i % 2 == 0 else "#FFFFFF")
+        d.line(O + [O[0]], fill="#B8322B", width=int(k * 1.2)); d.line(I + [I[0]], fill="#B8322B", width=int(k * 1.2))
+        return im.resize((n, n), Image.LANCZOS)
+    mp = os.environ.get("HB_MARK")
+    MARK = Image.open(mp).convert("RGBA") if mp and os.path.exists(mp) else draw_mark()
     def logo(n):
         return MARK.resize((n, n), Image.LANCZOS)
     big = logo(512)
