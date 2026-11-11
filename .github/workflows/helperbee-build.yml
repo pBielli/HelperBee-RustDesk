@@ -20,10 +20,8 @@ jobs:
           submodules: recursive
       - name: Apply HelperBee branding
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq librsvg2-bin
-          pip install --quiet pillow
-          rsvg-convert -w 512 helperbee/mark.svg -o /tmp/mark-512.png
-          HB_MARK=/tmp/mark-512.png HB_PANEL=helperbee/helperbee_panel.dart python3 helperbee/apply-branding.py .
+          python3 -c "import PIL" 2>/dev/null || pip install --quiet pillow
+          HB_PANEL=helperbee/helperbee_panel.dart python3 helperbee/apply-branding.py .
       - name: Commit to branch helperbee
         run: |
           git config user.name "pBielli"
